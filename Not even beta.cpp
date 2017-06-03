@@ -27,6 +27,8 @@ public plugin_init( )
 	);
 
 	RegisterHam( Ham_Spawn, PlayerClass, "ham_Spawn_EV", 1 );
+	RegisterHam(Ham_Killed, "player", "ham_Killed_EV", 1)  
+
 	RegisterHam(Ham_Player_ResetMaxSpeed,"player","playerResetMaxSpeed", 1)
 
 	register_forward( FM_CmdStart , "fw_FMCmdStart" );
@@ -34,8 +36,11 @@ public plugin_init( )
 	register_touch( "weaponbox", PlayerClass, "no_ghost_pickup" );
 	register_touch( "armoury_entity", PlayerClass, "no_ghost_pickup" );
 
-	register_event( "DeathMsg" , "func_deathmsg", "b", "1!0", "4!word" );
+	register_clcmd( "chooseteam", "blockch" );
+	register_clcmd( "jointeam", "blockch" );
 }
+
+public blockch( id ) return PLUGIN_HANDLED;
 
 public plugin_precache() 
 { 
@@ -43,6 +48,11 @@ public plugin_precache()
         
 	DispatchKeyValue( Entity, "buying", "3" );
 	DispatchSpawn( Entity );
+}
+
+public plugin_cfg()
+{
+	set_cvar_num( "mp_roundtime", "20" );
 }
 
 public playerResetMaxSpeed(id)
@@ -53,19 +63,11 @@ public playerResetMaxSpeed(id)
 	}
 } 
 
-public func_deathmsg()
+public ham_Killed_EV(victim, attacker, shouldgib) 
 {
-	new iAtk = read_data(1);
-	new iVct = read_data(2);
-
-	if( iAtk != iVct && is_user_alive( iAtk ) && !is_user_ghost(iAtk) )
+	if( is_user_ghost(victim) )
 	{
-		new AtkName[32], VctName[32];
-
-		get_user_name( iAtk, AtkName, charsmax(AtkName) );
-		get_user_name( iVct, VctName, charsmax(VctName) );
-
-		client_print( 0 , print_chat, "The hunter %s killed the ghost %s.", AtkName, VctName );
+		ExecuteHam( Ham_CS_RoundRespawn, victim );
 	}
 }
 
@@ -109,7 +111,6 @@ public ham_Spawn_EV( id )
 		{
 			give_user_weapon( id, CSW_USP, 12, 400 );
 			give_user_weapon( id, CSW_M4A1, 30, 800 );
-			give_user_weapon( id, CSW_HEGRENADE, 1 );
 		}
 	}
 }
@@ -163,4 +164,4 @@ give_user_weapon( index , iWeaponTypeID , iClip=0 , iBPAmmo=0 , szWeapon[]="" , 
 	}
 	
 	return iWeaponEntity;
-}		
+}	
