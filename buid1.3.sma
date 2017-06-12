@@ -37,9 +37,9 @@ public plugin_init( )
 	);
 
 	RegisterHam( Ham_Spawn, PlayerClass, "ham_Spawn_EV", 1 );
-	RegisterHam( Ham_Killed, "player", "ham_Killed_EV", 1 )  
-	RegisterHam( Ham_Player_ResetMaxSpeed,"player","playerResetMaxSpeed", 1 )
-	RegisterHam( Ham_TakeDamage, "player", "Player_TakeDamage" );
+	RegisterHam( Ham_Killed, PlayerClass, "ham_Killed_EV", 1 )  
+	RegisterHam( Ham_Player_ResetMaxSpeed, PlayerClass, "playerResetMaxSpeed", 1 )
+	RegisterHam( Ham_TakeDamage, PlayerClass, "Player_TakeDamage" );
 
 	register_forward( FM_CmdStart , "fw_FMCmdStart" ); 
 
@@ -110,7 +110,7 @@ public ham_Spawn_EV( id )
 	}
 }
 
-public Player_TakeDamage ( iVictim, iInflictor, iAttacker, Float:fDamage ) 
+public Player_TakeDamage( iVictim, iInflictor, iAttacker, Float:fDamage ) 
 {
 	if ( iInflictor == iAttacker && is_user_ghost(iAttacker) ) 
 	{
