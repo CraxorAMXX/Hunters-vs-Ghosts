@@ -1,3 +1,12 @@
+/*
+					 @Hunters vs Ghost@
+					(originaly by Craxor)
+
+
+
+*/
+#pragma semicolon 1
+
 #include <amxmodx>
 #include <fakemeta>
 #include <cstrike>
@@ -5,27 +14,46 @@
 #include <fun>
 #include <hamsandwich>
 
-new const PLUGIN_NAME[] = "Ghosts vs Hunters";
-new const VERSION_NUM[] = "b1.3";
-new const AUTHOR_NAME[] = "Craxor";
 
-new const PlayerClass[] = "player";
+/*		Const String Variables 		*/
 
-#define is_user_ghost(%0)	( cs_get_user_team(%0) == CS_TEAM_T )
+/*  `````````````````````````````````````````````````````````````````````````````````   */
+	new const PLUGIN_NAME[] = "Ghosts vs Hunters";
+	new const VERSION_NUM[] = "b1.4";
+	new const AUTHOR_NAME[] = "Craxor";
+	new const PlayerClass[] = "player";
+/*  `````````````````````````````````````````````````````````````````````````````````   */
 
-const ButtonBits = ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT );
 
-new Ham:Ham_Player_ResetMaxSpeed = Ham_Item_PreFrame
 
-/*	  Cvars		*/
+/*		Macross				*/
 
-	new gRespawn;
+/*  `````````````````````````````````````````````````````````````````````````````````   */
+	#define is_user_ghost(%0)	( cs_get_user_team(%0) == CS_TEAM_T )
+/*  `````````````````````````````````````````````````````````````````````````````````   */
+
+
+
+/*		Const Interger Variables	*/
+
+/*  `````````````````````````````````````````````````````````````````````````````````   */
+	const ButtonBits = ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT );
+	const Ham:Ham_Player_ResetMaxSpeed = Ham_Item_PreFrame;
+
+/*  `````````````````````````````````````````````````````````````````````````````````   */
+
+
+
+/*	  	Cvars				*/
+
+/*  `````````````````````````````````````````````````````````````````````````````````   */
+	new Respawn;
 	new HunterMaxSpeed;
 	new GhostMaxSpeed;
 	new HunterHealth;
 	new GhostHealth;
 
-/*  `````````````````   */
+/*  `````````````````````````````````````````````````````````````````````````````````   */
 
 public plugin_init( )
 {
@@ -37,16 +65,16 @@ public plugin_init( )
 	);
 
 	RegisterHam( Ham_Spawn, PlayerClass, "ham_Spawn_EV", 1 );
-	RegisterHam( Ham_Killed, PlayerClass, "ham_Killed_EV", 1 )  
-	RegisterHam( Ham_Player_ResetMaxSpeed, PlayerClass, "playerResetMaxSpeed", 1 )
-	RegisterHam( Ham_TakeDamage, PlayerClass, "Player_TakeDamage" );
+	RegisterHam( Ham_Killed, PlayerClass, "ham_Killed_EV", 1 );  
+	RegisterHam( Ham_Player_ResetMaxSpeed, PlayerClass, "ham_ResetMaxSpeed_EV", 1 );
+	RegisterHam( Ham_TakeDamage, PlayerClass, "ham_TakeDamage_EV" );
 
 	register_forward( FM_CmdStart , "fw_FMCmdStart" ); 
 
-	register_touch( "weaponbox", PlayerClass, "no_ghost_pickup" );
-	register_touch( "armoury_entity", PlayerClass, "no_ghost_pickup" );
+	register_touch( "weaponbox", PlayerClass, "touch_func_EV" );
+	register_touch( "armoury_entity", PlayerClass, "touch_func_EV" );
 	
-	gRespawn = register_cvar("hvg_allow_respawn", "1" );
+	Respawn = register_cvar("hvg_allow_respawn", "1" );
 	HunterMaxSpeed = register_cvar("hvg_hunter_maxspeed", "400" );
 	GhostMaxSpeed = register_cvar("hvg_ghost_maxspeed", "800" );
 	HunterHealth = register_cvar("hvg_hunter_health", "125" );
@@ -61,7 +89,7 @@ public plugin_precache()
 	DispatchSpawn( Entity );
 }
 
-public playerResetMaxSpeed(id)
+public ham_ResetMaxSpeed_EV(id)
 {
        	if( is_user_alive(id) )
 	{
@@ -81,7 +109,7 @@ public ham_Killed_EV(victim, attacker, shouldgib)
 		
 	}
 	
-	if( get_pcvar_num(gRespawn) )
+	if( get_pcvar_num(Respawn) )
 	{
 		ExecuteHam( Ham_CS_RoundRespawn, victim );
 	}
@@ -110,9 +138,17 @@ public ham_Spawn_EV( id )
 	}
 }
 
-public Player_TakeDamage( iVictim, iInflictor, iAttacker, Float:fDamage ) 
+bool:isPlayer(i)
 {
-	if ( iInflictor == iAttacker && is_user_ghost(iAttacker) ) 
+	new classname[8];
+	pev( i, pev_classname, classname, charsmax(classname) );
+
+	return bool:(classname[0]=='p'&&classname[1]=='l'&&classname[3]=='y'&&classname[5]=='r');
+}
+
+public ham_TakeDamage_EV( iVictim, iInflictor, iAttacker, Float:fDamage ) 
+{
+	if ( iInflictor == iAttacker && isPlayer(iAttacker) && is_user_ghost(iAttacker) ) 
 	{
 		SetHamParamFloat ( 4, fDamage * 2.0 );
 		return HAM_HANDLED;
@@ -120,17 +156,14 @@ public Player_TakeDamage( iVictim, iInflictor, iAttacker, Float:fDamage )
 	return HAM_IGNORED;   
 }
 
-public no_ghost_pickup(ent, id)
+public touch_func_EV(ent, id)
 {
 	if( !pev_valid(ent) || !id )
 		return -1;
 
-	if( is_user_ghost(id) )
-	{
-		return PLUGIN_HANDLED;
-	}
-	return PLUGIN_CONTINUE;
+	return is_user_ghost(id) ? PLUGIN_HANDLED : PLUGIN_CONTINUE;
 }
+
 public pfn_keyvalue( Entity )  
 { 
 	new ClassName[ 20 ], Dummy[ 2 ];
@@ -145,24 +178,23 @@ public pfn_keyvalue( Entity )
 	return PLUGIN_CONTINUE;
 }
 
-
 public fw_FMCmdStart( id , handle , seed )
 {
 	if ( is_user_ghost( id ) && is_user_alive( id ) )
 	{
 		if( get_uc( handle , UC_Buttons ) & ButtonBits )
  		{
-			set_user_rendering(id, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
+			set_user_rendering(id, kRenderFxNone, 0, 0, 0, kRenderNormal, 0);
 		}
 		else
 		{
-			set_user_rendering(id, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, 0)
+			set_user_rendering(id, kRenderFxNone, 0, 0, 0, kRenderTransAlpha, 0);
 		}
 	}
 
 	else
 	{
-		set_user_rendering(id, kRenderFxNone, 0, 0, 0, kRenderNormal, 0)
+		set_user_rendering(id, kRenderFxNone, 0, 0, 0, kRenderNormal, 0);
 	}
 
 }
