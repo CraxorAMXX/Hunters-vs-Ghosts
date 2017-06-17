@@ -39,7 +39,6 @@
 /*  `````````````````````````````````````````````````````````````````````````````````   */
 	const ButtonBits = ( IN_FORWARD | IN_BACK | IN_MOVELEFT | IN_MOVERIGHT );
 	const Ham:Ham_Player_ResetMaxSpeed = Ham_Item_PreFrame;
-
 /*  `````````````````````````````````````````````````````````````````````````````````   */
 
 
@@ -52,8 +51,9 @@
 	new GhostMaxSpeed;
 	new HunterHealth;
 	new GhostHealth;
-
 /*  `````````````````````````````````````````````````````````````````````````````````   */
+
+
 
 public plugin_init( )
 {
