@@ -1,6 +1,6 @@
 /*
 					 @Hunters vs Ghost@
-					(originaly by Craxor)
+					(wwww.amxmodx.org/)
 
 
 
