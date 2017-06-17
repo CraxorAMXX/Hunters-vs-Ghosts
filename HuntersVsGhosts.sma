@@ -1,6 +1,6 @@
 /*
 					 @Hunters vs Ghost@
-					(wwww.amxmodx.org/)
+					(www.amxmodx.org/)
 
 
 
